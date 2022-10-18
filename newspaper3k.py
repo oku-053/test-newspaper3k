@@ -53,13 +53,14 @@ def getWebText(targetSite):
         url = link['link']
     
         article = Article(url,language='ja')
-
-        article.download()
-
-        article.parse()
-
-        result = article.text
-
+        try:
+            article.download()
+            article.parse()
+            result = article.text
+        except:
+            print('***FAILED TO DOWNLOAD***', article.url)
+            continue
+        
         if result:
             print("記事を取得しました"+"["+link['link']+"]")
             #texts.append(result)
