@@ -47,7 +47,7 @@ def getDate(url):
 
     return date
 
-def getWebText(targetSite):
+def getWebTexts(targetSite):
     resultLists = []
     for link in getURL(targetSite):
         url = link['link']
@@ -76,6 +76,25 @@ def getWebText(targetSite):
         writer.writeheader()
         writer.writerows(resultLists)
 
+def getWebText(targetSite):
+    article = Article(targetSite,language='ja')
+    try:
+        article.download()
+        article.parse()
+        result = article.text
+    except:
+        print('***FAILED TO DOWNLOAD***', article.url)
+        
+    if result:
+        print("記事を取得しました")
+        #結果をファイルに書き込み
+        with open('result.txt', 'w',encoding='utf-8',newline='')as f:
+            f.write(result)
+    else:
+        print("記事を取得できませんでした")
+    
+
+
 def getWebPagination(url):
     r = requests.get(url)
     time.sleep(3)
@@ -100,6 +119,6 @@ def getWebPagination(url):
 
 if __name__ == '__main__':
 
-    url = "https://yosojicamp.com/category/campgaer/page/"
+    url = "https://www.takchaso.com/entry/utsurun-desu-wedding"
 
     getWebText(url)
