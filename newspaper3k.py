@@ -1,6 +1,7 @@
 from importlib.resources import contents
 from os import link
 from turtle import title
+from webbrowser import get
 from newspaper import Article
 import json
 from bs4 import BeautifulSoup
@@ -12,21 +13,27 @@ import csv
 def getURL (targetSite):
     title_links = []
     for i in range(1, getWebPagination(targetSite + "1")+1):
-        url = targetSite + str(i) 
+        #url = targetSite + str(i) 
+        url = targetSite
         r = requests.get(url)
 
         soup = BeautifulSoup(r.text, 'html.parser')
-        contents = soup.find(class_ = "p-postList")
-        get_a = contents.find_all("a")
+        #contents = soup.find(class_ = "p-postList")
+        contents = soup.find(class_ = "archive-entries")
+        get_a = contents.find_all("h1")
+        print(get_a[0])
 
         for i in range(len(get_a)):
             try:
-                title_ = get_a[i].find(class_ = "p-postList__title").text
-                link_ = get_a[i].get("href")
+                #title_ = get_a[i].find(class_ = "p-postList__title").text
+                link_ = get_a[i].find(class_ = "entry-title-link").get("href")
+                title_ = get_a[i].find(class_ = "entry-title-link").text
+                
                 date = getDate(link_)
                 #titles.append(title_)
                 title_links.append({'title':title_, 'link':link_, 'date':date})
             except:
+                print("サイト情報の取得に失敗しました")
                 pass
 
         
@@ -42,12 +49,13 @@ def getDate(url):
     r = requests.get(url)
 
     soup = BeautifulSoup(r.text, 'html.parser')
-    content = soup.find(class_ = "c-postTimes__modified")
+    #content = soup.find(class_ = "c-postTimes__modified")
+    content = soup.find(class_ = "date entry-date first").find("time")
     date = content.get("datetime")
 
     return date
 
-def getWebTexts(targetSite):
+def getWebTextsForMultiPage(targetSite):
     resultLists = []
     for link in getURL(targetSite):
         url = link['link']
@@ -100,10 +108,12 @@ def getWebPagination(url):
     time.sleep(3)
 
     soup = BeautifulSoup(r.text, 'html.parser')
-    pagination = soup.find(class_ = "c-pagination")
-    lastNumStr = pagination.find(class_ = "page-numbers -to-last").text
-    
-    return int(lastNumStr)
+    try:
+        pagination = soup.find(class_ = "c-pagination")
+        lastNumStr = pagination.find(class_ = "page-numbers -to-last").text
+        return int(lastNumStr)
+    except:
+        return 2
     # title_links = []
     # titles = []
     # for i in range(len(get_a)):
@@ -119,6 +129,6 @@ def getWebPagination(url):
 
 if __name__ == '__main__':
 
-    url = "https://www.takchaso.com/entry/utsurun-desu-wedding"
+    url = "https://www.takchaso.com/archive/category/%E5%86%99%E7%9C%9F%E3%83%BB%E3%82%AB%E3%83%A1%E3%83%A9-%E5%86%99%E3%83%AB%E3%83%B3%E3%81%A7%E3%81%99"
 
-    getWebText(url)
+    getWebTextsForMultiPage(url)
